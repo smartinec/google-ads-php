@@ -25,28 +25,28 @@ use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsException;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsServerStreamDecorator;
-use Google\Ads\GoogleAds\Util\V13\GoogleAdsFailures;
-use Google\Ads\GoogleAds\Util\V13\ResourceNames;
-use Google\Ads\GoogleAds\V13\Common\CrmBasedUserListInfo;
-use Google\Ads\GoogleAds\V13\Common\CustomerMatchUserListMetadata;
-use Google\Ads\GoogleAds\V13\Common\OfflineUserAddressInfo;
-use Google\Ads\GoogleAds\V13\Common\UserData;
-use Google\Ads\GoogleAds\V13\Common\UserIdentifier;
-use Google\Ads\GoogleAds\V13\Enums\CustomerMatchUploadKeyTypeEnum\CustomerMatchUploadKeyType;
-use Google\Ads\GoogleAds\V13\Enums\OfflineUserDataJobStatusEnum\OfflineUserDataJobStatus;
-use Google\Ads\GoogleAds\V13\Enums\OfflineUserDataJobTypeEnum\OfflineUserDataJobType;
-use Google\Ads\GoogleAds\V13\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V13\Resources\OfflineUserDataJob;
-use Google\Ads\GoogleAds\V13\Resources\UserList;
-use Google\Ads\GoogleAds\V13\Services\AddOfflineUserDataJobOperationsResponse;
-use Google\Ads\GoogleAds\V13\Services\CreateOfflineUserDataJobResponse;
-use Google\Ads\GoogleAds\V13\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V13\Services\OfflineUserDataJobOperation;
-use Google\Ads\GoogleAds\V13\Services\UserListOperation;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsServerStreamDecorator;
+use Google\Ads\GoogleAds\Util\V14\GoogleAdsFailures;
+use Google\Ads\GoogleAds\Util\V14\ResourceNames;
+use Google\Ads\GoogleAds\V14\Common\CrmBasedUserListInfo;
+use Google\Ads\GoogleAds\V14\Common\CustomerMatchUserListMetadata;
+use Google\Ads\GoogleAds\V14\Common\OfflineUserAddressInfo;
+use Google\Ads\GoogleAds\V14\Common\UserData;
+use Google\Ads\GoogleAds\V14\Common\UserIdentifier;
+use Google\Ads\GoogleAds\V14\Enums\CustomerMatchUploadKeyTypeEnum\CustomerMatchUploadKeyType;
+use Google\Ads\GoogleAds\V14\Enums\OfflineUserDataJobStatusEnum\OfflineUserDataJobStatus;
+use Google\Ads\GoogleAds\V14\Enums\OfflineUserDataJobTypeEnum\OfflineUserDataJobType;
+use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V14\Resources\OfflineUserDataJob;
+use Google\Ads\GoogleAds\V14\Resources\UserList;
+use Google\Ads\GoogleAds\V14\Services\AddOfflineUserDataJobOperationsResponse;
+use Google\Ads\GoogleAds\V14\Services\CreateOfflineUserDataJobResponse;
+use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V14\Services\OfflineUserDataJobOperation;
+use Google\Ads\GoogleAds\V14\Services\UserListOperation;
 use Google\ApiCore\ApiException;
 
 /**
@@ -187,6 +187,7 @@ class AddCustomerMatchUserList
      * @param int $customerId the customer ID
      * @return string the resource name of the newly created user list
      */
+    // [START add_customer_match_user_list_3]
     private static function createCustomerMatchUserList(
         GoogleAdsClient $googleAdsClient,
         int $customerId
@@ -220,6 +221,7 @@ class AddCustomerMatchUserList
 
         return $userListResourceName;
     }
+    // [END add_customer_match_user_list_3]
 
     /**
      * Creates and executes an asynchronous job to add users to the Customer Match user list.
@@ -344,30 +346,30 @@ class AddCustomerMatchUserList
         // The first user data has an email address and a phone number.
         $rawRecord1 = [
             // The first user data has an email address and a phone number.
-            'email' => 'test@gmail.com',
+            'email' => 'dana@example.com',
             // Phone number to be converted to E.164 format, with a leading '+' as required. This
             // includes whitespace that will be removed later.
-            'phone' => '+1 234 5678910'
+            'phone' => '+1 800 5550101'
         ];
         $rawRecords[] = $rawRecord1;
 
         // The second user data has an email address, a mailing address, and a phone number.
         $rawRecord2 = [
             // Email address that includes a period (.) before the Gmail domain.
-            'email' => 'test.2@gmail.com',
+            'email' => 'alex.2@example.com',
             // Address that includes all four required elements: first name, last name, country
             // code, and postal code.
-            'firstName' => 'John',
-            'lastName' => 'Doe',
+            'firstName' => 'Alex',
+            'lastName' => 'Quinn',
             'countryCode' => 'US',
-            'postalCode' => '10011',
+            'postalCode' => '94045',
             // Phone number to be converted to E.164 format, with a leading '+' as required.
-            'phone' => '+1 234 5678911',
+            'phone' => '+1 800 5550102',
         ];
         $rawRecords[] = $rawRecord2;
 
         // The third user data only has an email address.
-        $rawRecord3 = ['email' => 'test3@gmail.com'];
+        $rawRecord3 = ['email' => 'charlie@example.com'];
         $rawRecords[] = $rawRecord3;
 
         // Iterates over the raw input list and creates a UserData object for each record.
@@ -457,7 +459,6 @@ class AddCustomerMatchUserList
                 $userDataList[] = new UserData(['user_identifiers' => $userIdentifiers]);
             }
         }
-        // [END add_customer_match_user_list_2]
 
         // Creates the operations to add users.
         $operations = array_map(
@@ -466,6 +467,7 @@ class AddCustomerMatchUserList
             },
             $userDataList
         );
+        // [END add_customer_match_user_list_2]
         return $operations;
     }
 
@@ -477,6 +479,7 @@ class AddCustomerMatchUserList
      * @param string $offlineUserDataJobResourceName the resource name of the offline user data job
      *     to get the status for
      */
+    // [START add_customer_match_user_list_4]
     private static function checkJobStatus(
         GoogleAdsClient $googleAdsClient,
         int $customerId,
@@ -531,6 +534,7 @@ class AddCustomerMatchUserList
             );
         }
     }
+    // [END add_customer_match_user_list_4]
 
     /**
      * Prints information about the Customer Match user list.
@@ -545,6 +549,7 @@ class AddCustomerMatchUserList
         int $customerId,
         string $userListResourceName
     ) {
+        // [START add_customer_match_user_list_5]
         $googleAdsServiceClient = $googleAdsClient->getGoogleAdsServiceClient();
 
         // Creates a query that retrieves the user list.
@@ -556,6 +561,7 @@ class AddCustomerMatchUserList
         // Issues a search stream request.
         /** @var GoogleAdsServerStreamDecorator $stream */
         $stream = $googleAdsServiceClient->searchStream($customerId, $query);
+        // [END add_customer_match_user_list_5]
 
         // Prints out some information about the user list.
         /** @var GoogleAdsRow $googleAdsRow */

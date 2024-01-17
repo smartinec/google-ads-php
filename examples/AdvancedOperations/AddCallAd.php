@@ -24,17 +24,17 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsException;
-use Google\Ads\GoogleAds\Util\V13\ResourceNames;
-use Google\Ads\GoogleAds\V13\Common\CallAdInfo;
-use Google\Ads\GoogleAds\V13\Enums\AdGroupAdStatusEnum\AdGroupAdStatus;
-use Google\Ads\GoogleAds\V13\Enums\CallConversionReportingStateEnum\CallConversionReportingState;
-use Google\Ads\GoogleAds\V13\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V13\Resources\Ad;
-use Google\Ads\GoogleAds\V13\Resources\AdGroupAd;
-use Google\Ads\GoogleAds\V13\Services\AdGroupAdOperation;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\V14\ResourceNames;
+use Google\Ads\GoogleAds\V14\Common\CallAdInfo;
+use Google\Ads\GoogleAds\V14\Enums\AdGroupAdStatusEnum\AdGroupAdStatus;
+use Google\Ads\GoogleAds\V14\Enums\CallConversionReportingStateEnum\CallConversionReportingState;
+use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V14\Resources\Ad;
+use Google\Ads\GoogleAds\V14\Resources\AdGroupAd;
+use Google\Ads\GoogleAds\V14\Services\AdGroupAdOperation;
 use Google\ApiCore\ApiException;
 
 /**
@@ -119,7 +119,7 @@ class AddCallAd
      * @param int $customerId the customer ID
      * @param int $adGroupId the ad group ID to add a call ad to
      * @param string $phoneCountry the phone country (2-letter code)
-     * @param string $phoneNumber the raw phone number, e.g. '(123) 456-7890'
+     * @param string $phoneNumber the raw phone number, e.g. '(800) 555-0100'
      * @param int|null $conversionActionId the conversion action ID to attribute conversions to
      */
     public static function runExample(

@@ -24,21 +24,21 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V13\GoogleAdsException;
-use Google\Ads\GoogleAds\Util\V13\ResourceNames;
-use Google\Ads\GoogleAds\V13\Common\AdScheduleInfo;
-use Google\Ads\GoogleAds\V13\Common\CallAsset;
-use Google\Ads\GoogleAds\V13\Enums\AssetFieldTypeEnum\AssetFieldType;
-use Google\Ads\GoogleAds\V13\Enums\CallConversionReportingStateEnum\CallConversionReportingState;
-use Google\Ads\GoogleAds\V13\Enums\DayOfWeekEnum\DayOfWeek;
-use Google\Ads\GoogleAds\V13\Enums\MinuteOfHourEnum\MinuteOfHour;
-use Google\Ads\GoogleAds\V13\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V13\Resources\Asset;
-use Google\Ads\GoogleAds\V13\Resources\CustomerAsset;
-use Google\Ads\GoogleAds\V13\Services\AssetOperation;
-use Google\Ads\GoogleAds\V13\Services\CustomerAssetOperation;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\V14\ResourceNames;
+use Google\Ads\GoogleAds\V14\Common\AdScheduleInfo;
+use Google\Ads\GoogleAds\V14\Common\CallAsset;
+use Google\Ads\GoogleAds\V14\Enums\AssetFieldTypeEnum\AssetFieldType;
+use Google\Ads\GoogleAds\V14\Enums\CallConversionReportingStateEnum\CallConversionReportingState;
+use Google\Ads\GoogleAds\V14\Enums\DayOfWeekEnum\DayOfWeek;
+use Google\Ads\GoogleAds\V14\Enums\MinuteOfHourEnum\MinuteOfHour;
+use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V14\Resources\Asset;
+use Google\Ads\GoogleAds\V14\Resources\CustomerAsset;
+use Google\Ads\GoogleAds\V14\Services\AssetOperation;
+use Google\Ads\GoogleAds\V14\Services\CustomerAssetOperation;
 use Google\ApiCore\ApiException;
 
 /**
@@ -117,7 +117,7 @@ class AddCall
      * @param GoogleAdsClient $googleAdsClient the Google Ads API client
      * @param int $customerId the client customer ID
      * @param string $phoneCountry the phone country (2-letter code)
-     * @param string $phoneNumber the raw phone number, e.g. '(123) 456-7890'
+     * @param string $phoneNumber the raw phone number, e.g. '(800) 555-0100'
      * @param int|null $conversionActionId the conversion action ID to attribute conversions to
      */
     public static function runExample(
@@ -146,7 +146,7 @@ class AddCall
      * @param GoogleAdsClient $googleAdsClient the Google Ads API client
      * @param int $customerId the client customer ID
      * @param string $phoneCountry the phone country (2-letter code)
-     * @param string $phoneNumber the raw phone number, e.g. '(123) 456-7890'
+     * @param string $phoneNumber the raw phone number, e.g. '(800) 555-0100'
      * @param int|null $conversionActionId the conversion action ID to attribute conversions to
      * @return string the resource name of the created call asset
      */
