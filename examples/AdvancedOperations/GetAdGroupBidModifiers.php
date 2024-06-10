@@ -24,14 +24,15 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\V14\Enums\DayOfWeekEnum\DayOfWeek;
-use Google\Ads\GoogleAds\V14\Enums\DeviceEnum\Device;
-use Google\Ads\GoogleAds\V14\Enums\HotelDateSelectionTypeEnum\HotelDateSelectionType;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\V17\Enums\DayOfWeekEnum\DayOfWeek;
+use Google\Ads\GoogleAds\V17\Enums\DeviceEnum\Device;
+use Google\Ads\GoogleAds\V17\Enums\HotelDateSelectionTypeEnum\HotelDateSelectionType;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V17\Services\SearchGoogleAdsRequest;
 use Google\ApiCore\ApiException;
 
 /** This example gets ad group bid modifiers. */
@@ -40,8 +41,6 @@ class GetAdGroupBidModifiers
     private const CUSTOMER_ID = 'INSERT_CUSTOMER_ID_HERE';
     // Optional: Specify an ad group ID below to restrict search to only a given ad group.
     private const AD_GROUP_ID = null;
-
-    private const PAGE_SIZE = 1000;
 
     public static function main()
     {
@@ -59,6 +58,12 @@ class GetAdGroupBidModifiers
         // OAuth2 credentials above.
         $googleAdsClient = (new GoogleAdsClientBuilder())->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -127,9 +132,9 @@ class GetAdGroupBidModifiers
         }
         $query .= " LIMIT 10000";
 
-        // Issues a search request by specifying page size.
+        // Issues a search request.
         $response =
-            $googleAdsServiceClient->search($customerId, $query, ['pageSize' => self::PAGE_SIZE]);
+            $googleAdsServiceClient->search(SearchGoogleAdsRequest::build($customerId, $query));
 
         // Iterates over all rows in all pages and prints the requested field values for
         // the ad group bid modifier in each row.
@@ -137,14 +142,31 @@ class GetAdGroupBidModifiers
             /** @var GoogleAdsRow $googleAdsRow */
             $adGroupBidModifier = $googleAdsRow->getAdGroupBidModifier();
             printf(
-                "Ad group bid modifier with criterion ID %d, bid modifier value %f "
-                . "was found in an ad group ID %d of campaign ID %d.%s",
+                "Ad group bid modifier with criterion ID %d in ad group ID %d of campaign ID %d ",
                 $adGroupBidModifier->getCriterionId(),
-                $adGroupBidModifier->getBidModifier(),
                 $googleAdsRow->getAdGroup()->getId(),
-                $googleAdsRow->getCampaign()->getId(),
-                PHP_EOL
+                $googleAdsRow->getCampaign()->getId()
             );
+
+            // When working with an 'optional' protocol buffer field such as AdGroup::$bid_modifier,
+            // use hasXX() to check if the field is set, and only retrieve the value using getXX()
+            // if hasXX() returns true. See the protocol buffer documentation on field presence for
+            // more information:
+            // https://protobuf.dev/programming-guides/field_presence/#presence-in-proto3-apis
+
+            if ($adGroupBidModifier->hasBidModifier()) {
+                // Prints the bid modifier value since it is set.
+                printf(
+                    "has a bid modifier value of %.2f.%s",
+                    $adGroupBidModifier->getBidModifier(),
+                    PHP_EOL
+                );
+            } else {
+                // Does not print the bid modifier value since it is not set. Printing the result of
+                // $adGroupBidModifier->getBidModifier() in this case would be misleading, since it
+                // will be 0.
+                print 'does NOT have a bid modifier value.' . PHP_EOL;
+            }
 
             $criterionDetails = ' - Criterion type: ' . $adGroupBidModifier->getCriterion() . ', ';
             switch ($adGroupBidModifier->getCriterion()) {

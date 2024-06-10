@@ -25,29 +25,35 @@ use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsServerStreamDecorator;
-use Google\Ads\GoogleAds\Util\V14\GoogleAdsFailures;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\ItemAttribute;
-use Google\Ads\GoogleAds\V14\Common\OfflineUserAddressInfo;
-use Google\Ads\GoogleAds\V14\Common\StoreSalesMetadata;
-use Google\Ads\GoogleAds\V14\Common\StoreSalesThirdPartyMetadata;
-use Google\Ads\GoogleAds\V14\Common\TransactionAttribute;
-use Google\Ads\GoogleAds\V14\Common\UserData;
-use Google\Ads\GoogleAds\V14\Common\UserIdentifier;
-use Google\Ads\GoogleAds\V14\Enums\OfflineUserDataJobFailureReasonEnum\OfflineUserDataJobFailureReason;
-use Google\Ads\GoogleAds\V14\Enums\OfflineUserDataJobStatusEnum\OfflineUserDataJobStatus;
-use Google\Ads\GoogleAds\V14\Enums\OfflineUserDataJobTypeEnum\OfflineUserDataJobType;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\OfflineUserDataJob;
-use Google\Ads\GoogleAds\V14\Services\AddOfflineUserDataJobOperationsResponse;
-use Google\Ads\GoogleAds\V14\Services\CreateOfflineUserDataJobResponse;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V14\Services\OfflineUserDataJobOperation;
-use Google\Ads\GoogleAds\V14\Services\OfflineUserDataJobServiceClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsServerStreamDecorator;
+use Google\Ads\GoogleAds\Util\V17\GoogleAdsFailures;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\Consent;
+use Google\Ads\GoogleAds\V17\Common\ItemAttribute;
+use Google\Ads\GoogleAds\V17\Common\OfflineUserAddressInfo;
+use Google\Ads\GoogleAds\V17\Common\StoreSalesMetadata;
+use Google\Ads\GoogleAds\V17\Common\StoreSalesThirdPartyMetadata;
+use Google\Ads\GoogleAds\V17\Common\TransactionAttribute;
+use Google\Ads\GoogleAds\V17\Common\UserData;
+use Google\Ads\GoogleAds\V17\Common\UserIdentifier;
+use Google\Ads\GoogleAds\V17\Enums\ConsentStatusEnum\ConsentStatus;
+use Google\Ads\GoogleAds\V17\Enums\OfflineUserDataJobFailureReasonEnum\OfflineUserDataJobFailureReason;
+use Google\Ads\GoogleAds\V17\Enums\OfflineUserDataJobStatusEnum\OfflineUserDataJobStatus;
+use Google\Ads\GoogleAds\V17\Enums\OfflineUserDataJobTypeEnum\OfflineUserDataJobType;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\OfflineUserDataJob;
+use Google\Ads\GoogleAds\V17\Services\AddOfflineUserDataJobOperationsRequest;
+use Google\Ads\GoogleAds\V17\Services\AddOfflineUserDataJobOperationsResponse;
+use Google\Ads\GoogleAds\V17\Services\Client\OfflineUserDataJobServiceClient;
+use Google\Ads\GoogleAds\V17\Services\CreateOfflineUserDataJobRequest;
+use Google\Ads\GoogleAds\V17\Services\CreateOfflineUserDataJobResponse;
+use Google\Ads\GoogleAds\V17\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V17\Services\OfflineUserDataJobOperation;
+use Google\Ads\GoogleAds\V17\Services\RunOfflineUserDataJobRequest;
+use Google\Ads\GoogleAds\V17\Services\SearchGoogleAdsStreamRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -90,6 +96,10 @@ class UploadStoreSalesTransactions
     private const BRIDGE_MAP_VERSION_ID = null;
     /** The ID of the third party partner. */
     private const PARTNER_ID = null;
+    // Optional: The consent status for ad personalization.
+    private const AD_PERSONALIZATION_CONSENT = null;
+    // Optional: The consent status for ad user data.
+    private const AD_USER_DATA_CONSENT = null;
 
     // Optional: Below constants are only required if uploading with item attributes.
     /**
@@ -128,6 +138,8 @@ class UploadStoreSalesTransactions
             ArgumentNames::CUSTOMER_ID => GetOpt::REQUIRED_ARGUMENT,
             ArgumentNames::OFFLINE_USER_DATA_JOB_TYPE => GetOpt::OPTIONAL_ARGUMENT,
             ArgumentNames::CONVERSION_ACTION_ID => GetOpt::REQUIRED_ARGUMENT,
+            ArgumentNames::AD_PERSONALIZATION_CONSENT => GetOpt::OPTIONAL_ARGUMENT,
+            ArgumentNames::AD_USER_DATA_CONSENT => GetOpt::OPTIONAL_ARGUMENT,
             ArgumentNames::EXTERNAL_ID => GetOpt::OPTIONAL_ARGUMENT,
             ArgumentNames::CUSTOM_KEY => GetOpt::OPTIONAL_ARGUMENT,
             ArgumentNames::ADVERTISER_UPLOAD_DATE_TIME => GetOpt::OPTIONAL_ARGUMENT,
@@ -148,6 +160,12 @@ class UploadStoreSalesTransactions
         $googleAdsClient = (new GoogleAdsClientBuilder())
             ->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -157,6 +175,12 @@ class UploadStoreSalesTransactions
                 $options[ArgumentNames::OFFLINE_USER_DATA_JOB_TYPE]
                     ?: self::OFFLINE_USER_DATA_JOB_TYPE,
                 $options[ArgumentNames::CONVERSION_ACTION_ID] ?: self::CONVERSION_ACTION_ID,
+                $options[ArgumentNames::AD_PERSONALIZATION_CONSENT]
+                    ? ConsentStatus::value($options[ArgumentNames::AD_PERSONALIZATION_CONSENT])
+                    : self::AD_PERSONALIZATION_CONSENT,
+                $options[ArgumentNames::AD_USER_DATA_CONSENT]
+                    ? ConsentStatus::value($options[ArgumentNames::AD_USER_DATA_CONSENT])
+                    : self::AD_USER_DATA_CONSENT,
                 $options[ArgumentNames::EXTERNAL_ID] ?: self::EXTERNAL_ID,
                 $options[ArgumentNames::CUSTOM_KEY] ?: self::CUSTOM_KEY,
                 $options[ArgumentNames::ADVERTISER_UPLOAD_DATE_TIME]
@@ -206,6 +230,8 @@ class UploadStoreSalesTransactions
      *     party or third party). If you have an official store sales partnership with Google, use
      *     `STORE_SALES_UPLOAD_THIRD_PARTY`. Otherwise, use `STORE_SALES_UPLOAD_FIRST_PARTY`
      * @param int $conversionActionId the ID of a store sales conversion action
+     * @param int|null $adPersonalizationConsent the ad personalization consent status
+     * @param int|null $adUserDataConsent the ad user data consent status
      * @param int|null $externalId optional (but recommended) external ID for the offline user data
      *     job
      * @param string|null $customKey the custom key to segment store sales conversions. Only
@@ -231,6 +257,8 @@ class UploadStoreSalesTransactions
         int $customerId,
         ?string $offlineUserDataJobType,
         int $conversionActionId,
+        ?int $adPersonalizationConsent,
+        ?int $adUserDataConsent,
         ?int $externalId,
         ?string $customKey,
         ?string $advertiserUploadDateTime,
@@ -262,6 +290,8 @@ class UploadStoreSalesTransactions
             $customerId,
             $offlineUserDataJobResourceName,
             $conversionActionId,
+            $adPersonalizationConsent,
+            $adUserDataConsent,
             $itemId,
             $merchantCenterAccountId,
             $countryCode,
@@ -270,7 +300,9 @@ class UploadStoreSalesTransactions
         );
 
         // Issues an asynchronous request to run the offline user data job.
-        $offlineUserDataJobServiceClient->runOfflineUserDataJob($offlineUserDataJobResourceName);
+        $offlineUserDataJobServiceClient->runOfflineUserDataJob(
+            RunOfflineUserDataJobRequest::build($offlineUserDataJobResourceName)
+        );
 
         printf(
             "Sent request to asynchronously run offline user data job: '%s'.%s",
@@ -388,8 +420,7 @@ class UploadStoreSalesTransactions
         /** @var CreateOfflineUserDataJobResponse $createOfflineUserDataJobResponse */
         $createOfflineUserDataJobResponse =
             $offlineUserDataJobServiceClient->createOfflineUserDataJob(
-                $customerId,
-                $offlineUserDataJob
+                CreateOfflineUserDataJobRequest::build($customerId, $offlineUserDataJob)
             );
         $offlineUserDataJobResourceName = $createOfflineUserDataJobResponse->getResourceName();
         printf(
@@ -410,6 +441,8 @@ class UploadStoreSalesTransactions
      * @param string $offlineUserDataJobResourceName the resource name of the created offline user
      *     data job
      * @param int $conversionActionId the ID of a store sales conversion action
+     * @param int|null $adPersonalizationConsent the ad personalization consent status
+     * @param int|null $adUserDataConsent the ad user data consent status
      * @param string|null $itemId a unique identifier of a product, either the Merchant Center Item
      *     ID or Global Trade Item Number (GTIN)
      * @param int|null $merchantCenterAccountId a Merchant Center Account ID
@@ -425,6 +458,8 @@ class UploadStoreSalesTransactions
         int $customerId,
         string $offlineUserDataJobResourceName,
         int $conversionActionId,
+        ?int $adPersonalizationConsent,
+        ?int $adUserDataConsent,
         ?string $itemId,
         ?int $merchantCenterAccountId,
         ?string $countryCode,
@@ -435,6 +470,8 @@ class UploadStoreSalesTransactions
         $userDataJobOperations = self::buildOfflineUserDataJobOperations(
             $customerId,
             $conversionActionId,
+            $adPersonalizationConsent,
+            $adUserDataConsent,
             $itemId,
             $merchantCenterAccountId,
             $countryCode,
@@ -445,12 +482,13 @@ class UploadStoreSalesTransactions
         // [START enable_warnings_1]
         // Issues a request to add the operations to the offline user data job.
         /** @var AddOfflineUserDataJobOperationsResponse $operationResponse */
-        $response = $offlineUserDataJobServiceClient->addOfflineUserDataJobOperations(
+        $request = AddOfflineUserDataJobOperationsRequest::build(
             $offlineUserDataJobResourceName,
-            $userDataJobOperations,
-            // (Optional) Enables partial failure and warnings.
-            ['enablePartialFailure' => true, 'enableWarnings' => true]
+            $userDataJobOperations
         );
+        // (Optional) Enables partial failure and warnings.
+        $request->setEnablePartialFailure(true)->setEnableWarnings(true);
+        $response = $offlineUserDataJobServiceClient->addOfflineUserDataJobOperations($request);
         // [END enable_warnings_1]
 
         // Prints the status message if any partial failure error is returned.
@@ -497,6 +535,8 @@ class UploadStoreSalesTransactions
      *
      * @param int $customerId the customer ID
      * @param int $conversionActionId the ID of a store sales conversion action
+     * @param int|null $adPersonalizationConsent the ad personalization consent status
+     * @param int|null $adUserDataConsent the ad user data consent status
      * @return OfflineUserDataJobOperation[] an array with the operations
      * @param string|null $itemId a unique identifier of a product, either the Merchant Center Item
      *     ID or Global Trade Item Number (GTIN)
@@ -511,6 +551,8 @@ class UploadStoreSalesTransactions
     private static function buildOfflineUserDataJobOperations(
         $customerId,
         $conversionActionId,
+        ?int $adPersonalizationConsent,
+        ?int $adUserDataConsent,
         ?string $itemId,
         ?int $merchantCenterAccountId,
         ?string $countryCode,
@@ -545,6 +587,20 @@ class UploadStoreSalesTransactions
                 // 'custom_value' => 'INSERT_CUSTOM_VALUE_HERE'
             ])
         ]);
+
+        // Adds consent information if specified.
+        if (!empty($adPersonalizationConsent) || !empty($adUserDataConsent)) {
+            $consent = new Consent();
+            if (!empty($adPersonalizationConsent)) {
+                $consent->setAdPersonalization($adPersonalizationConsent);
+            }
+            if (!empty($adUserDataConsent)) {
+                $consent->setAdUserData($adUserDataConsent);
+            }
+            // Specifies whether user consent was obtained for the data you are uploading. See
+            // https://www.google.com/about/company/user-consent-policy for details.
+            $userDataWithEmailAddress->setConsent($consent);
+        }
 
         // Creates the second transaction for upload based on a physical address.
         $userDataWithPhysicalAddress = new UserData([
@@ -637,7 +693,9 @@ class UploadStoreSalesTransactions
 
         // Issues a search stream request.
         /** @var GoogleAdsServerStreamDecorator $stream */
-        $stream = $googleAdsServiceClient->searchStream($customerId, $query);
+        $stream = $googleAdsServiceClient->searchStream(
+            SearchGoogleAdsStreamRequest::build($customerId, $query)
+        );
 
         // Prints out some information about the offline user data.
         /** @var GoogleAdsRow $googleAdsRow */

@@ -25,21 +25,23 @@ use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsServerStreamDecorator;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsServerStreamDecorator;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\TargetSpend;
-use Google\Ads\GoogleAds\V14\Enums\BiddingStrategyTypeEnum\BiddingStrategyType;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\BiddingStrategy;
-use Google\Ads\GoogleAds\V14\Resources\Campaign;
-use Google\Ads\GoogleAds\V14\Services\BiddingStrategyOperation;
-use Google\Ads\GoogleAds\V14\Services\BiddingStrategyServiceClient;
-use Google\Ads\GoogleAds\V14\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\TargetSpend;
+use Google\Ads\GoogleAds\V17\Enums\BiddingStrategyTypeEnum\BiddingStrategyType;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\BiddingStrategy;
+use Google\Ads\GoogleAds\V17\Resources\Campaign;
+use Google\Ads\GoogleAds\V17\Services\BiddingStrategyOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V17\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V17\Services\MutateBiddingStrategiesRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateCampaignsRequest;
+use Google\Ads\GoogleAds\V17\Services\SearchGoogleAdsStreamRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -71,6 +73,12 @@ class UseCrossAccountBiddingStrategy
         // OAuth2 credentials above.
         $googleAdsClient = (new GoogleAdsClientBuilder())->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -165,8 +173,7 @@ class UseCrossAccountBiddingStrategy
         // Issues a mutate request to create the bidding strategy.
         $biddingStrategyServiceClient = $googleAdsClient->getBiddingStrategyServiceClient();
         $response = $biddingStrategyServiceClient->mutateBiddingStrategies(
-            $managerCustomerId,
-            [$biddingStrategyOperation]
+            MutateBiddingStrategiesRequest::build($managerCustomerId, [$biddingStrategyOperation])
         );
         /** @var BiddingStrategy $addedBiddingStrategy */
         $addedBiddingStrategy = $response->getResults()[0];
@@ -200,7 +207,9 @@ class UseCrossAccountBiddingStrategy
             . 'FROM bidding_strategy';
         // Issues a search stream request.
         /** @var GoogleAdsServerStreamDecorator $stream */
-        $stream = $googleAdsServiceClient->searchStream($managerCustomerId, $query);
+        $stream = $googleAdsServiceClient->searchStream(
+            SearchGoogleAdsStreamRequest::build($managerCustomerId, $query)
+        );
 
         // Iterates over all rows in all messages and prints the requested field values for
         // the bidding strategy in each row.
@@ -252,7 +261,9 @@ class UseCrossAccountBiddingStrategy
         ;
         // Issues a search stream request.
         /** @var GoogleAdsServerStreamDecorator $stream */
-        $stream = $googleAdsServiceClient->searchStream($clientCustomerId, $query);
+        $stream = $googleAdsServiceClient->searchStream(
+            SearchGoogleAdsStreamRequest::build($clientCustomerId, $query)
+        );
 
         // Iterates over all rows in all messages and prints the requested field values for
         // each accessible bidding strategy.
@@ -311,8 +322,9 @@ class UseCrossAccountBiddingStrategy
 
         // Issues a mutate request to update the campaign.
         $campaignServiceClient = $googleAdsClient->getCampaignServiceClient();
-        $response =
-            $campaignServiceClient->mutateCampaigns($clientCustomerId, [$campaignOperation]);
+        $response = $campaignServiceClient->mutateCampaigns(
+            MutateCampaignsRequest::build($clientCustomerId, [$campaignOperation])
+        );
 
         // Prints information about the updated campaign.
         printf(

@@ -24,38 +24,43 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\AdTextAsset;
-use Google\Ads\GoogleAds\V14\Common\AppAdInfo;
-use Google\Ads\GoogleAds\V14\Common\LanguageInfo;
-use Google\Ads\GoogleAds\V14\Common\LocationInfo;
-use Google\Ads\GoogleAds\V14\Enums\AdGroupAdStatusEnum\AdGroupAdStatus;
-use Google\Ads\GoogleAds\V14\Enums\AdGroupStatusEnum\AdGroupStatus;
-use Google\Ads\GoogleAds\V14\Enums\AppCampaignBiddingStrategyGoalTypeEnum\AppCampaignBiddingStrategyGoalType;
-use Google\Ads\GoogleAds\V14\Common\TargetCpa;
-use Google\Ads\GoogleAds\V14\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
-use Google\Ads\GoogleAds\V14\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V14\Enums\AppCampaignAppStoreEnum\AppCampaignAppStore;
-use Google\Ads\GoogleAds\V14\Enums\BudgetDeliveryMethodEnum\BudgetDeliveryMethod;
-use Google\Ads\GoogleAds\V14\Enums\CampaignStatusEnum\CampaignStatus;
-use Google\Ads\GoogleAds\V14\Enums\CriterionTypeEnum\CriterionType;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\Ad;
-use Google\Ads\GoogleAds\V14\Resources\AdGroup;
-use Google\Ads\GoogleAds\V14\Resources\AdGroupAd;
-use Google\Ads\GoogleAds\V14\Resources\Campaign;
-use Google\Ads\GoogleAds\V14\Resources\Campaign\AppCampaignSetting;
-use Google\Ads\GoogleAds\V14\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V14\Resources\CampaignCriterion;
-use Google\Ads\GoogleAds\V14\Services\AdGroupAdOperation;
-use Google\Ads\GoogleAds\V14\Services\AdGroupOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignBudgetOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignCriterionOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignOperation;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\AdTextAsset;
+use Google\Ads\GoogleAds\V17\Common\AppAdInfo;
+use Google\Ads\GoogleAds\V17\Common\LanguageInfo;
+use Google\Ads\GoogleAds\V17\Common\LocationInfo;
+use Google\Ads\GoogleAds\V17\Enums\AdGroupAdStatusEnum\AdGroupAdStatus;
+use Google\Ads\GoogleAds\V17\Enums\AdGroupStatusEnum\AdGroupStatus;
+use Google\Ads\GoogleAds\V17\Enums\AppCampaignBiddingStrategyGoalTypeEnum\AppCampaignBiddingStrategyGoalType;
+use Google\Ads\GoogleAds\V17\Common\TargetCpa;
+use Google\Ads\GoogleAds\V17\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
+use Google\Ads\GoogleAds\V17\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V17\Enums\AppCampaignAppStoreEnum\AppCampaignAppStore;
+use Google\Ads\GoogleAds\V17\Enums\BudgetDeliveryMethodEnum\BudgetDeliveryMethod;
+use Google\Ads\GoogleAds\V17\Enums\CampaignStatusEnum\CampaignStatus;
+use Google\Ads\GoogleAds\V17\Enums\CriterionTypeEnum\CriterionType;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\Ad;
+use Google\Ads\GoogleAds\V17\Resources\AdGroup;
+use Google\Ads\GoogleAds\V17\Resources\AdGroupAd;
+use Google\Ads\GoogleAds\V17\Resources\Campaign;
+use Google\Ads\GoogleAds\V17\Resources\Campaign\AppCampaignSetting;
+use Google\Ads\GoogleAds\V17\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V17\Resources\CampaignCriterion;
+use Google\Ads\GoogleAds\V17\Services\AdGroupAdOperation;
+use Google\Ads\GoogleAds\V17\Services\AdGroupOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignCriterionOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateAdGroupAdsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateAdGroupsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateCampaignBudgetsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateCampaignCriteriaRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateCampaignsRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -87,6 +92,12 @@ class AddAppCampaign
         $googleAdsClient = (new GoogleAdsClientBuilder())
             ->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -183,8 +194,7 @@ class AddAppCampaign
         // Submits the campaign budget operation to add the campaign budget.
         $campaignBudgetServiceClient = $googleAdsClient->getCampaignBudgetServiceClient();
         $response = $campaignBudgetServiceClient->mutateCampaignBudgets(
-            $customerId,
-            [$campaignBudgetOperation]
+            MutateCampaignBudgetsRequest::build($customerId, [$campaignBudgetOperation])
         );
 
         $createdCampaignBudgetResourceName = $response->getResults()[0]->getResourceName();
@@ -259,7 +269,9 @@ class AddAppCampaign
 
         // Submits the campaign operation and prints the results.
         $campaignServiceClient = $googleAdsClient->getCampaignServiceClient();
-        $response = $campaignServiceClient->mutateCampaigns($customerId, [$campaignOperation]);
+        $response = $campaignServiceClient->mutateCampaigns(
+            MutateCampaignsRequest::build($customerId, [$campaignOperation])
+        );
 
         $createdCampaignResourceName = $response->getResults()[0]->getResourceName();
         printf(
@@ -336,8 +348,7 @@ class AddAppCampaign
         // Submits the criteria operations and prints their information.
         $campaignCriterionServiceClient = $googleAdsClient->getCampaignCriterionServiceClient();
         $response = $campaignCriterionServiceClient->mutateCampaignCriteria(
-            $customerId,
-            $campaignCriterionOperations
+            MutateCampaignCriteriaRequest::build($customerId, $campaignCriterionOperations)
         );
 
         printf(
@@ -382,7 +393,9 @@ class AddAppCampaign
 
         // Submits the ad group operation to add the ad group and prints the results.
         $adGroupServiceClient = $googleAdsClient->getAdGroupServiceClient();
-        $response = $adGroupServiceClient->mutateAdGroups($customerId, [$adGroupOperation]);
+        $response = $adGroupServiceClient->mutateAdGroups(
+            MutateAdGroupsRequest::build($customerId, [$adGroupOperation])
+        );
 
         $createdAdGroupResourceName = $response->getResults()[0]->getResourceName();
         printf(
@@ -439,7 +452,9 @@ class AddAppCampaign
 
         // Submits the ad group ad operation to add the ad group ad and prints the results.
         $adGroupAdServiceClient = $googleAdsClient->getAdGroupAdServiceClient();
-        $response = $adGroupAdServiceClient->mutateAdGroupAds($customerId, [$adGroupAdOperation]);
+        $response = $adGroupAdServiceClient->mutateAdGroupAds(
+            MutateAdGroupAdsRequest::build($customerId, [$adGroupAdOperation])
+        );
 
         $createdAdGroupAdResourceName = $response->getResults()[0]->getResourceName();
         printf(

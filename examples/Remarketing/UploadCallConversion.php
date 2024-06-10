@@ -24,14 +24,17 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Services\CallConversion;
-use Google\Ads\GoogleAds\V14\Services\CallConversionResult;
-use Google\Ads\GoogleAds\V14\Services\CustomVariable;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\Consent;
+use Google\Ads\GoogleAds\V17\Enums\ConsentStatusEnum\ConsentStatus;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Services\CallConversion;
+use Google\Ads\GoogleAds\V17\Services\CallConversionResult;
+use Google\Ads\GoogleAds\V17\Services\CustomVariable;
+use Google\Ads\GoogleAds\V17\Services\UploadCallConversionsRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -50,6 +53,8 @@ class UploadCallConversion
     // associate with the call conversion upload.
     private const CONVERSION_CUSTOM_VARIABLE_ID = null;
     private const CONVERSION_CUSTOM_VARIABLE_VALUE = null;
+    // Optional: The consent status for ad user data.
+    private const AD_USER_DATA_CONSENT = null;
 
     public static function main()
     {
@@ -63,7 +68,8 @@ class UploadCallConversion
             ArgumentNames::CONVERSION_DATE_TIME => GetOpt::REQUIRED_ARGUMENT,
             ArgumentNames::CONVERSION_VALUE => GetOpt::REQUIRED_ARGUMENT,
             ArgumentNames::CONVERSION_CUSTOM_VARIABLE_ID => GetOpt::OPTIONAL_ARGUMENT,
-            ArgumentNames::CONVERSION_CUSTOM_VARIABLE_VALUE => GetOpt::OPTIONAL_ARGUMENT
+            ArgumentNames::CONVERSION_CUSTOM_VARIABLE_VALUE => GetOpt::OPTIONAL_ARGUMENT,
+            ArgumentNames::AD_USER_DATA_CONSENT => GetOpt::OPTIONAL_ARGUMENT
         ]);
 
         // Generate a refreshable OAuth2 credential for authentication.
@@ -74,6 +80,12 @@ class UploadCallConversion
         $googleAdsClient = (new GoogleAdsClientBuilder())
             ->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -88,7 +100,10 @@ class UploadCallConversion
                 $options[ArgumentNames::CONVERSION_CUSTOM_VARIABLE_ID]
                     ?: self::CONVERSION_CUSTOM_VARIABLE_ID,
                 $options[ArgumentNames::CONVERSION_CUSTOM_VARIABLE_VALUE]
-                    ?: self::CONVERSION_CUSTOM_VARIABLE_VALUE
+                    ?: self::CONVERSION_CUSTOM_VARIABLE_VALUE,
+                $options[ArgumentNames::AD_USER_DATA_CONSENT]
+                    ? ConsentStatus::value($options[ArgumentNames::AD_USER_DATA_CONSENT])
+                    : self::AD_USER_DATA_CONSENT
             );
         } catch (GoogleAdsException $googleAdsException) {
             printf(
@@ -135,6 +150,7 @@ class UploadCallConversion
      *     associate with the upload
      * @param string|null $conversionCustomVariableValue the value of the conversion custom
      *     variable to associate with the upload
+     * @param int|null $adUserDataConsent the consent status for ad user data
      */
     // [START upload_call_conversion]
     public static function runExample(
@@ -146,7 +162,8 @@ class UploadCallConversion
         string $conversionDateTime,
         float $conversionValue,
         ?string $conversionCustomVariableId,
-        ?string $conversionCustomVariableValue
+        ?string $conversionCustomVariableValue,
+        ?int $adUserDataConsent
     ) {
         // Creates a call conversion by specifying currency as USD.
         $callConversion = new CallConversion([
@@ -167,13 +184,23 @@ class UploadCallConversion
                 'value' => $conversionCustomVariableValue
             ])]);
         }
+        // Sets the consent information, if provided.
+        if (!empty($adUserDataConsent)) {
+            // Specifies whether user consent was obtained for the data you are uploading. See
+            // https://www.google.com/about/company/user-consent-policy for details.
+            $callConversion->setConsent(new Consent(['ad_user_data' => $adUserDataConsent]));
+        }
 
         // Issues a request to upload the call conversion.
         $conversionUploadServiceClient = $googleAdsClient->getConversionUploadServiceClient();
+        // NOTE: This request contains a single conversion as a demonstration.  However, if you have
+        // multiple conversions to upload, it's best to upload multiple conversions per request
+        // instead of sending a separate request per conversion. See the following for per-request
+        // limits:
+        // https://developers.google.com/google-ads/api/docs/best-practices/quotas#conversion_upload_service
         $response = $conversionUploadServiceClient->uploadCallConversions(
-            $customerId,
-            [$callConversion],
-            true
+            // Partial failure MUST be enabled for this request.
+            UploadCallConversionsRequest::build($customerId, [$callConversion], true)
         );
 
         // Prints the status message if any partial failure error is returned.

@@ -24,17 +24,18 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\V14\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
-use Google\Ads\GoogleAds\V14\Enums\ConversionActionStatusEnum\ConversionActionStatus;
-use Google\Ads\GoogleAds\V14\Enums\ConversionActionTypeEnum\ConversionActionType;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\ConversionAction;
-use Google\Ads\GoogleAds\V14\Resources\ConversionAction\ValueSettings;
-use Google\Ads\GoogleAds\V14\Services\ConversionActionOperation;
+use Google\Ads\GoogleAds\V17\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
+use Google\Ads\GoogleAds\V17\Enums\ConversionActionStatusEnum\ConversionActionStatus;
+use Google\Ads\GoogleAds\V17\Enums\ConversionActionTypeEnum\ConversionActionType;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V17\Resources\ConversionAction\ValueSettings;
+use Google\Ads\GoogleAds\V17\Services\ConversionActionOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateConversionActionsRequest;
 use Google\ApiCore\ApiException;
 
 /** This example illustrates adding a conversion action. */
@@ -58,6 +59,12 @@ class AddConversionAction
         $googleAdsClient = (new GoogleAdsClientBuilder())
             ->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -103,6 +110,9 @@ class AddConversionAction
     {
         // Creates a conversion action.
         $conversionAction = new ConversionAction([
+            // Note that conversion action names must be unique.
+            // If a conversion action already exists with the specified conversion_action_name
+            // the create operation will fail with a ConversionActionError.DUPLICATE_NAME error.
             'name' => 'Earth to Mars Cruises Conversion #' . Helper::getPrintableDatetime(),
             'category' => ConversionActionCategory::PBDEFAULT,
             'type' => ConversionActionType::WEBPAGE,
@@ -121,8 +131,7 @@ class AddConversionAction
         // Issues a mutate request to add the conversion action.
         $conversionActionServiceClient = $googleAdsClient->getConversionActionServiceClient();
         $response = $conversionActionServiceClient->mutateConversionActions(
-            $customerId,
-            [$conversionActionOperation]
+            MutateConversionActionsRequest::build($customerId, [$conversionActionOperation])
         );
 
         printf("Added %d conversion actions:%s", $response->getResults()->count(), PHP_EOL);

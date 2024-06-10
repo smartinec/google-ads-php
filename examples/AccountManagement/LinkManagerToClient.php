@@ -24,17 +24,20 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Enums\ManagerLinkStatusEnum\ManagerLinkStatus;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\CustomerClientLink;
-use Google\Ads\GoogleAds\V14\Resources\CustomerManagerLink;
-use Google\Ads\GoogleAds\V14\Services\CustomerClientLinkOperation;
-use Google\Ads\GoogleAds\V14\Services\CustomerManagerLinkOperation;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Enums\ManagerLinkStatusEnum\ManagerLinkStatus;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\CustomerClientLink;
+use Google\Ads\GoogleAds\V17\Resources\CustomerManagerLink;
+use Google\Ads\GoogleAds\V17\Services\CustomerClientLinkOperation;
+use Google\Ads\GoogleAds\V17\Services\CustomerManagerLinkOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateCustomerClientLinkRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateCustomerManagerLinkRequest;
+use Google\Ads\GoogleAds\V17\Services\SearchGoogleAdsRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -45,7 +48,6 @@ class LinkManagerToClient
 {
     private const MANAGER_CUSTOMER_ID = 'INSERT_MANAGER_CUSTOMER_ID_HERE';
     private const CUSTOMER_ID = 'INSERT_CUSTOMER_ID_HERE';
-    private const PAGE_SIZE = 50;
 
     public static function main()
     {
@@ -148,8 +150,10 @@ class LinkManagerToClient
         // Issues a mutate request to create the customer client link.
         $customerClientLinkServiceClient = $googleAdsClient->getCustomerClientLinkServiceClient();
         $response = $customerClientLinkServiceClient->mutateCustomerClientLink(
-            $managerCustomerId,
-            $customerClientLinkOperation
+            MutateCustomerClientLinkRequest::build(
+                $managerCustomerId,
+                $customerClientLinkOperation
+            )
         );
 
         // Prints the result.
@@ -187,12 +191,10 @@ class LinkManagerToClient
         $query = "SELECT customer_client_link.manager_link_id FROM customer_client_link" .
             " WHERE customer_client_link.resource_name = '$customerClientLinkResourceName'";
 
-        // Issues a search request by specifying the page size.
+        // Issues a search request.
         $googleAdsServiceClient = $googleAdsClient->getGoogleAdsServiceClient();
         $response = $googleAdsServiceClient->search(
-            $managerCustomerId,
-            $query,
-            ['pageSize' => self::PAGE_SIZE]
+            SearchGoogleAdsRequest::build($managerCustomerId, $query)
         );
 
         // Gets the ID and resource name associated to the manager link found.
@@ -247,8 +249,10 @@ class LinkManagerToClient
         $customerManagerLinkServiceClient =
             $googleAdsClient->getCustomerManagerLinkServiceClient();
         $response = $customerManagerLinkServiceClient->mutateCustomerManagerLink(
-            $clientCustomerId,
-            [$customerManagerLinkOperation]
+            MutateCustomerManagerLinkRequest::build(
+                $clientCustomerId,
+                [$customerManagerLinkOperation]
+            )
         );
 
         // Prints the result.
@@ -284,6 +288,12 @@ class LinkManagerToClient
             ->withOAuth2Credential($oAuth2Credential)
             // Overrides the login customer ID with the given one.
             ->withLoginCustomerId($loginCustomerId)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
     }
 }

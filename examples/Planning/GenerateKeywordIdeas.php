@@ -24,16 +24,17 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Enums\KeywordPlanNetworkEnum\KeywordPlanNetwork;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Services\GenerateKeywordIdeaResult;
-use Google\Ads\GoogleAds\V14\Services\KeywordAndUrlSeed;
-use Google\Ads\GoogleAds\V14\Services\KeywordSeed;
-use Google\Ads\GoogleAds\V14\Services\UrlSeed;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Enums\KeywordPlanNetworkEnum\KeywordPlanNetwork;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Services\GenerateKeywordIdeaResult;
+use Google\Ads\GoogleAds\V17\Services\GenerateKeywordIdeasRequest;
+use Google\Ads\GoogleAds\V17\Services\KeywordAndUrlSeed;
+use Google\Ads\GoogleAds\V17\Services\KeywordSeed;
+use Google\Ads\GoogleAds\V17\Services\UrlSeed;
 use Google\ApiCore\ApiException;
 
 /** This example generates keyword ideas from a list of seed keywords or a seed page URL. */
@@ -76,6 +77,12 @@ class GenerateKeywordIdeas
         // OAuth2 credentials above.
         $googleAdsClient = (new GoogleAdsClientBuilder())->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -150,13 +157,13 @@ class GenerateKeywordIdeas
         $requestOptionalArgs = [];
         if (empty($keywords)) {
             // Only page URL was specified, so use a UrlSeed.
-            $requestOptionalArgs['urlSeed'] = new UrlSeed(['url' => $pageUrl]);
+            $requestOptionalArgs['url_seed'] = new UrlSeed(['url' => $pageUrl]);
         } elseif (is_null($pageUrl)) {
             // Only keywords were specified, so use a KeywordSeed.
-            $requestOptionalArgs['keywordSeed'] = new KeywordSeed(['keywords' => $keywords]);
+            $requestOptionalArgs['keyword_seed'] = new KeywordSeed(['keywords' => $keywords]);
         } else {
             // Both page URL and keywords were specified, so use a KeywordAndUrlSeed.
-            $requestOptionalArgs['keywordAndUrlSeed'] =
+            $requestOptionalArgs['keyword_and_url_seed'] =
                 new KeywordAndUrlSeed(['url' => $pageUrl, 'keywords' => $keywords]);
         }
 
@@ -168,16 +175,16 @@ class GenerateKeywordIdeas
 
         // Generate keyword ideas based on the specified parameters.
         $response = $keywordPlanIdeaServiceClient->generateKeywordIdeas(
-            [
+            new GenerateKeywordIdeasRequest([
                 // Set the language resource using the provided language ID.
                 'language' => ResourceNames::forLanguageConstant($languageId),
-                'customerId' => $customerId,
+                'customer_id' => $customerId,
                 // Add the resource name of each location ID to the request.
-                'geoTargetConstants' => $geoTargetConstants,
+                'geo_target_constants' => $geoTargetConstants,
                 // Set the network. To restrict to only Google Search, change the parameter below to
                 // KeywordPlanNetwork::GOOGLE_SEARCH.
-                'keywordPlanNetwork' => KeywordPlanNetwork::GOOGLE_SEARCH_AND_PARTNERS
-            ] + $requestOptionalArgs
+                'keyword_plan_network' => KeywordPlanNetwork::GOOGLE_SEARCH_AND_PARTNERS
+            ] + $requestOptionalArgs)
         );
 
         // Iterate over the results and print its detail.

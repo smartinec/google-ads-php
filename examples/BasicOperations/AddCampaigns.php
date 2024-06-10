@@ -24,20 +24,22 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\V14\Common\ManualCpc;
-use Google\Ads\GoogleAds\V14\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V14\Enums\BudgetDeliveryMethodEnum\BudgetDeliveryMethod;
-use Google\Ads\GoogleAds\V14\Enums\CampaignStatusEnum\CampaignStatus;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\Campaign;
-use Google\Ads\GoogleAds\V14\Resources\Campaign\NetworkSettings;
-use Google\Ads\GoogleAds\V14\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V14\Services\CampaignBudgetOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V17\Common\ManualCpc;
+use Google\Ads\GoogleAds\V17\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V17\Enums\BudgetDeliveryMethodEnum\BudgetDeliveryMethod;
+use Google\Ads\GoogleAds\V17\Enums\CampaignStatusEnum\CampaignStatus;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\Campaign;
+use Google\Ads\GoogleAds\V17\Resources\Campaign\NetworkSettings;
+use Google\Ads\GoogleAds\V17\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V17\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateCampaignsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateCampaignBudgetsRequest;
 use Google\ApiCore\ApiException;
 
 /** This example adds new campaigns to an account. */
@@ -62,6 +64,12 @@ class AddCampaigns
         $googleAdsClient = (new GoogleAdsClientBuilder())
             ->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -147,7 +155,9 @@ class AddCampaigns
 
         // Issues a mutate request to add campaigns.
         $campaignServiceClient = $googleAdsClient->getCampaignServiceClient();
-        $response = $campaignServiceClient->mutateCampaigns($customerId, $campaignOperations);
+        $response = $campaignServiceClient->mutateCampaigns(
+            MutateCampaignsRequest::build($customerId, $campaignOperations)
+        );
 
         printf("Added %d campaigns:%s", $response->getResults()->count(), PHP_EOL);
 
@@ -181,8 +191,7 @@ class AddCampaigns
         // Issues a mutate request.
         $campaignBudgetServiceClient = $googleAdsClient->getCampaignBudgetServiceClient();
         $response = $campaignBudgetServiceClient->mutateCampaignBudgets(
-            $customerId,
-            [$campaignBudgetOperation]
+            MutateCampaignBudgetsRequest::build($customerId, [$campaignBudgetOperation])
         );
 
         /** @var CampaignBudget $addedBudget */

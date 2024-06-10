@@ -25,48 +25,52 @@ use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\AdScheduleInfo;
-use Google\Ads\GoogleAds\V14\Common\AdTextAsset;
-use Google\Ads\GoogleAds\V14\Common\KeywordThemeInfo;
-use Google\Ads\GoogleAds\V14\Common\LocationInfo;
-use Google\Ads\GoogleAds\V14\Common\SmartCampaignAdInfo;
-use Google\Ads\GoogleAds\V14\Enums\AdGroupTypeEnum\AdGroupType;
-use Google\Ads\GoogleAds\V14\Enums\AdTypeEnum\AdType;
-use Google\Ads\GoogleAds\V14\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
-use Google\Ads\GoogleAds\V14\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V14\Enums\BudgetTypeEnum\BudgetType;
-use Google\Ads\GoogleAds\V14\Enums\CampaignStatusEnum\CampaignStatus;
-use Google\Ads\GoogleAds\V14\Enums\DayOfWeekEnum\DayOfWeek;
-use Google\Ads\GoogleAds\V14\Enums\MinuteOfHourEnum\MinuteOfHour;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\Ad;
-use Google\Ads\GoogleAds\V14\Resources\AdGroup;
-use Google\Ads\GoogleAds\V14\Resources\AdGroupAd;
-use Google\Ads\GoogleAds\V14\Resources\Campaign;
-use Google\Ads\GoogleAds\V14\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V14\Resources\CampaignCriterion;
-use Google\Ads\GoogleAds\V14\Resources\KeywordThemeConstant;
-use Google\Ads\GoogleAds\V14\Resources\SmartCampaignSetting;
-use Google\Ads\GoogleAds\V14\Resources\SmartCampaignSetting\PhoneNumber;
-use Google\Ads\GoogleAds\V14\Services\AdGroupAdOperation;
-use Google\Ads\GoogleAds\V14\Services\AdGroupOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignBudgetOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignCriterionOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V14\Services\MutateGoogleAdsResponse;
-use Google\Ads\GoogleAds\V14\Services\MutateOperation;
-use Google\Ads\GoogleAds\V14\Services\MutateOperationResponse;
-use Google\Ads\GoogleAds\V14\Services\SmartCampaignSettingOperation;
-use Google\Ads\GoogleAds\V14\Services\SmartCampaignSuggestionInfo;
-use Google\Ads\GoogleAds\V14\Services\SmartCampaignSuggestionInfo\BusinessContext;
-use Google\Ads\GoogleAds\V14\Services\SmartCampaignSuggestionInfo\LocationList;
-use Google\Ads\GoogleAds\V14\Services\SuggestKeywordThemesResponse\KeywordTheme;
-use Google\Ads\GoogleAds\V14\Services\SuggestSmartCampaignBudgetOptionsRequest\SuggestionDataOneof;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\AdScheduleInfo;
+use Google\Ads\GoogleAds\V17\Common\AdTextAsset;
+use Google\Ads\GoogleAds\V17\Common\KeywordThemeInfo;
+use Google\Ads\GoogleAds\V17\Common\LocationInfo;
+use Google\Ads\GoogleAds\V17\Common\SmartCampaignAdInfo;
+use Google\Ads\GoogleAds\V17\Enums\AdGroupTypeEnum\AdGroupType;
+use Google\Ads\GoogleAds\V17\Enums\AdTypeEnum\AdType;
+use Google\Ads\GoogleAds\V17\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
+use Google\Ads\GoogleAds\V17\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V17\Enums\BudgetTypeEnum\BudgetType;
+use Google\Ads\GoogleAds\V17\Enums\CampaignStatusEnum\CampaignStatus;
+use Google\Ads\GoogleAds\V17\Enums\DayOfWeekEnum\DayOfWeek;
+use Google\Ads\GoogleAds\V17\Enums\MinuteOfHourEnum\MinuteOfHour;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\Ad;
+use Google\Ads\GoogleAds\V17\Resources\AdGroup;
+use Google\Ads\GoogleAds\V17\Resources\AdGroupAd;
+use Google\Ads\GoogleAds\V17\Resources\Campaign;
+use Google\Ads\GoogleAds\V17\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V17\Resources\CampaignCriterion;
+use Google\Ads\GoogleAds\V17\Resources\KeywordThemeConstant;
+use Google\Ads\GoogleAds\V17\Resources\SmartCampaignSetting;
+use Google\Ads\GoogleAds\V17\Resources\SmartCampaignSetting\PhoneNumber;
+use Google\Ads\GoogleAds\V17\Services\AdGroupAdOperation;
+use Google\Ads\GoogleAds\V17\Services\AdGroupOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignCriterionOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V17\Services\MutateOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\V17\Services\SmartCampaignSettingOperation;
+use Google\Ads\GoogleAds\V17\Services\SmartCampaignSuggestionInfo;
+use Google\Ads\GoogleAds\V17\Services\SmartCampaignSuggestionInfo\BusinessContext;
+use Google\Ads\GoogleAds\V17\Services\SmartCampaignSuggestionInfo\LocationList;
+use Google\Ads\GoogleAds\V17\Services\SuggestKeywordThemeConstantsRequest;
+use Google\Ads\GoogleAds\V17\Services\SuggestKeywordThemesRequest;
+use Google\Ads\GoogleAds\V17\Services\SuggestKeywordThemesResponse\KeywordTheme;
+use Google\Ads\GoogleAds\V17\Services\SuggestSmartCampaignAdRequest;
+use Google\Ads\GoogleAds\V17\Services\SuggestSmartCampaignBudgetOptionsRequest;
 use Google\ApiCore\ApiException;
 use InvalidArgumentException;
 
@@ -151,6 +155,12 @@ class AddSmartCampaign
         $googleAdsClient = (new GoogleAdsClientBuilder())
             ->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -295,7 +305,7 @@ class AddSmartCampaign
 
         // Issues a single mutate request to add the entities.
         $googleAdsServiceClient = $googleAdsClient->getGoogleAdsServiceClient();
-        $response = $googleAdsServiceClient->mutate(
+        $response = $googleAdsServiceClient->mutate(MutateGoogleAdsRequest::build(
             $customerId,
             // It's important to create these entities in this order because they depend on
             // each other, for example the SmartCampaignSetting and ad group depend on the
@@ -312,7 +322,7 @@ class AddSmartCampaign
                     $adGroupAdOperation
                 ]
             )
-        );
+        ));
 
         self::printResponseDetails($response);
     }
@@ -342,8 +352,11 @@ class AddSmartCampaign
             $googleAdsClient->getSmartCampaignSuggestServiceClient();
 
         // Issues a request to retrieve the keyword themes.
-        $response =
-            $smartCampaignSuggestServiceClient->suggestKeywordThemes($customerId, $suggestionInfo);
+        $response = $smartCampaignSuggestServiceClient->suggestKeywordThemes(
+            (new SuggestKeywordThemesRequest())
+                ->setCustomerId($customerId)
+                ->setSuggestionInfo($suggestionInfo)
+        );
 
         printf(
             "Retrieved %d keyword theme suggestions from the SuggestKeywordThemes "
@@ -374,11 +387,12 @@ class AddSmartCampaign
         $keywordThemeConstantService = $googleAdsClient->getKeywordThemeConstantServiceClient();
 
         // Issues a request to retrieve the keyword theme constants.
-        $response = $keywordThemeConstantService->suggestKeywordThemeConstants([
-            'queryText' => $keywordText,
-            'countryCode' => self::COUNTRY_CODE,
-            'languageCode' => self::LANGUAGE_CODE
-        ]);
+        $response = $keywordThemeConstantService->suggestKeywordThemeConstants(
+            (new SuggestKeywordThemeConstantsRequest())
+                ->setQueryText($keywordText)
+                ->setCountryCode(self::COUNTRY_CODE)
+                ->setLanguageCode(self::LANGUAGE_CODE)
+        );
 
         printf(
             "Retrieved %d keyword theme constants using the keyword: '%s'.%s",
@@ -504,21 +518,20 @@ class AddSmartCampaign
         int $customerId,
         SmartCampaignSuggestionInfo $suggestionInfo
     ): int {
-        $suggestionData = new SuggestionDataOneof();
 
-        // You can retrieve suggestions for an existing campaign by setting the "campaign"
-        // field equal to the resource name of a campaign:
-        // $suggestionData->setCampaign('INSERT_CAMPAIGN_RESOURCE_NAME_HERE');
 
-        // Since these suggestions are for a new campaign, we're going to use the
-        // suggestion_info field instead.
-        $suggestionData->setSuggestionInfo($suggestionInfo);
 
         // Issues a request to retrieve a budget suggestion.
         $smartCampaignSuggestService = $googleAdsClient->getSmartCampaignSuggestServiceClient();
         $response = $smartCampaignSuggestService->suggestSmartCampaignBudgetOptions(
-            $customerId,
-            $suggestionData
+            (new SuggestSmartCampaignBudgetOptionsRequest())
+                ->setCustomerId($customerId)
+                // You can retrieve suggestions for an existing campaign by setting the "campaign"
+                // field equal to the resource name of a campaign:
+                // ->setCampaign('INSERT_CAMPAIGN_RESOURCE_NAME_HERE');
+                // Since these suggestions are for a new campaign, we're going to use the
+                // suggestion_info field instead.
+                ->setSuggestionInfo($suggestionInfo)
         );
 
         // Three tiers of options will be returned, a "low", "high" and "recommended". Here we will
@@ -563,8 +576,9 @@ class AddSmartCampaign
         // Issues a request to retrieve ad creative suggestions.
         $smartCampaignSuggestService = $googleAdsClient->getSmartCampaignSuggestServiceClient();
         $response = $smartCampaignSuggestService->suggestSmartCampaignAd(
-            $customerId,
-            $suggestionInfo
+            (new SuggestSmartCampaignAdRequest())
+                ->setCustomerId($customerId)
+                ->setSuggestionInfo($suggestionInfo)
         );
 
         // The SmartCampaignAdInfo object in the response contains a list of up to three headlines

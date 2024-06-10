@@ -25,21 +25,25 @@ use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\DynamicEducationAsset;
-use Google\Ads\GoogleAds\V14\Enums\AssetSetTypeEnum\AssetSetType;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\Asset;
-use Google\Ads\GoogleAds\V14\Resources\AssetSet;
-use Google\Ads\GoogleAds\V14\Resources\AssetSetAsset;
-use Google\Ads\GoogleAds\V14\Resources\CampaignAssetSet;
-use Google\Ads\GoogleAds\V14\Services\AssetOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetSetAssetOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetSetOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignAssetSetOperation;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\DynamicEducationAsset;
+use Google\Ads\GoogleAds\V17\Enums\AssetSetTypeEnum\AssetSetType;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\Asset;
+use Google\Ads\GoogleAds\V17\Resources\AssetSet;
+use Google\Ads\GoogleAds\V17\Resources\AssetSetAsset;
+use Google\Ads\GoogleAds\V17\Resources\CampaignAssetSet;
+use Google\Ads\GoogleAds\V17\Services\AssetOperation;
+use Google\Ads\GoogleAds\V17\Services\AssetSetAssetOperation;
+use Google\Ads\GoogleAds\V17\Services\AssetSetOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignAssetSetOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateAssetSetAssetsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateAssetSetsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateAssetsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateCampaignAssetSetsRequest;
 use Google\ApiCore\ApiException;
 
 /** Adds an asset for use in dynamic remarketing. */
@@ -65,6 +69,12 @@ class AddDynamicRemarketingAsset
         // OAuth2 credentials above.
         $googleAdsClient = (new GoogleAdsClientBuilder())->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -179,8 +189,7 @@ class AddDynamicRemarketingAsset
         // Issues a mutate request to add the asset and prints its information.
         $assetServiceClient = $googleAdsClient->getAssetServiceClient();
         $response = $assetServiceClient->mutateAssets(
-            $customerId,
-            [$assetOperation]
+            MutateAssetsRequest::build($customerId, [$assetOperation])
         );
         $assetResourceName = $response->getResults()[0]->getResourceName();
         printf(
@@ -217,8 +226,7 @@ class AddDynamicRemarketingAsset
         // Issues a mutate request to add the asset set and prints its information.
         $assetSetServiceClient = $googleAdsClient->getAssetSetServiceClient();
         $response = $assetSetServiceClient->mutateAssetSets(
-            $customerId,
-            [$assetSetOperation]
+            MutateAssetSetsRequest::build($customerId, [$assetSetOperation])
         );
         $assetSetResourceName = $response->getResults()[0]->getResourceName();
         printf(
@@ -262,8 +270,7 @@ class AddDynamicRemarketingAsset
         // program_id, however, only one asset is allowed per asset set with the same product ID.
         $assetSetAssetServiceClient = $googleAdsClient->getAssetSetAssetServiceClient();
         $response = $assetSetAssetServiceClient->mutateAssetSetAssets(
-            $customerId,
-            [$assetSetAssetOperation]
+            MutateAssetSetAssetsRequest::build($customerId, [$assetSetAssetOperation])
         );
         printf(
             "Created asset set asset link with resource name: '%s'.%s",
@@ -301,8 +308,7 @@ class AddDynamicRemarketingAsset
         // Issues a mutate request to add the campaign asset set and prints its information.
         $campaignAssetSetServiceClient = $googleAdsClient->getCampaignAssetSetServiceClient();
         $response = $campaignAssetSetServiceClient->mutateCampaignAssetSets(
-            $customerId,
-            [$campaignAssetSetOperation]
+            MutateCampaignAssetSetsRequest::build($customerId, [$campaignAssetSetOperation])
         );
         printf(
             "Created a campaign asset set with resource name: '%s'.%s",

@@ -23,16 +23,18 @@ require __DIR__ . '/../../vendor/autoload.php';
 use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\V14\Enums\CriterionTypeEnum\CriterionType;
-use Google\Ads\GoogleAds\V14\Enums\KeywordMatchTypeEnum\KeywordMatchType;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\SharedCriterion;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V14\Services\SharedCriterionOperation;
+use Google\Ads\GoogleAds\V17\Enums\CriterionTypeEnum\CriterionType;
+use Google\Ads\GoogleAds\V17\Enums\KeywordMatchTypeEnum\KeywordMatchType;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\SharedCriterion;
+use Google\Ads\GoogleAds\V17\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V17\Services\MutateSharedCriteriaRequest;
+use Google\Ads\GoogleAds\V17\Services\SearchGoogleAdsRequest;
+use Google\Ads\GoogleAds\V17\Services\SharedCriterionOperation;
 use Google\ApiCore\ApiException;
 
 /**
@@ -43,8 +45,6 @@ class FindAndRemoveCriteriaFromSharedSet
 {
     private const CUSTOMER_ID = 'INSERT_CUSTOMER_ID_HERE';
     private const CAMPAIGN_ID = 'INSERT_CAMPAIGN_ID_HERE';
-
-    private const PAGE_SIZE = 1000;
 
     public static function main()
     {
@@ -62,6 +62,12 @@ class FindAndRemoveCriteriaFromSharedSet
         // OAuth2 credentials above.
         $googleAdsClient = (new GoogleAdsClientBuilder())->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -117,9 +123,9 @@ class FindAndRemoveCriteriaFromSharedSet
         $query = "SELECT shared_set.id, shared_set.name FROM campaign_shared_set WHERE "
             . "campaign.id = $campaignId";
 
-        // Issues a search request by specifying page size.
+        // Issues a search request.
         $response =
-            $googleAdsServiceClient->search($customerId, $query, ['pageSize' => self::PAGE_SIZE]);
+            $googleAdsServiceClient->search(SearchGoogleAdsRequest::build($customerId, $query));
 
         // Iterates over all rows in all pages and prints the requested field values for
         // the shared set in each row.
@@ -140,9 +146,9 @@ class FindAndRemoveCriteriaFromSharedSet
               . "FROM shared_criterion "
               . "WHERE shared_set.id IN (%s)", implode(',', $sharedSetIds));
 
-        // Issues a search request by specifying page size.
+        // Issues a search request.
         $response =
-            $googleAdsServiceClient->search($customerId, $query, ['pageSize' => self::PAGE_SIZE]);
+            $googleAdsServiceClient->search(SearchGoogleAdsRequest::build($customerId, $query));
 
         // Iterates over all rows in all pages and prints the requested field values for
         // the shared criterion in each row.
@@ -181,8 +187,7 @@ class FindAndRemoveCriteriaFromSharedSet
         // Sends the operation in a mutate request.
         $sharedCriterionServiceClient = $googleAdsClient->getSharedCriterionServiceClient();
         $response = $sharedCriterionServiceClient->mutateSharedCriteria(
-            $customerId,
-            $sharedCriterionOperations
+            MutateSharedCriteriaRequest::build($customerId, $sharedCriterionOperations)
         );
 
         // Prints the resource name of each removed shared criterion.

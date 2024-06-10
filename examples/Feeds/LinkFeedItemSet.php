@@ -24,13 +24,14 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\FeedItemSetLink;
-use Google\Ads\GoogleAds\V14\Services\FeedItemSetLinkOperation;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\FeedItemSetLink;
+use Google\Ads\GoogleAds\V17\Services\FeedItemSetLinkOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateFeedItemSetLinksRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -63,6 +64,12 @@ class LinkFeedItemSet
         // OAuth2 credentials above.
         $googleAdsClient = (new GoogleAdsClientBuilder())->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -129,8 +136,7 @@ class LinkFeedItemSet
         // Issues a mutate request to add the feed item set link on the server.
         $feedItemSetLinkServiceClient = $googleAdsClient->getFeedItemSetLinkServiceClient();
         $response = $feedItemSetLinkServiceClient->mutateFeedItemSetLinks(
-            $customerId,
-            [$feedItemSetLinkOperation]
+            MutateFeedItemSetLinksRequest::build($customerId, [$feedItemSetLinkOperation])
         );
         // Prints some information about the created feed item set link.
         printf(

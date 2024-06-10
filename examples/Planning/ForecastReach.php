@@ -24,22 +24,25 @@ use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\V14\Common\DeviceInfo;
-use Google\Ads\GoogleAds\V14\Common\GenderInfo;
-use Google\Ads\GoogleAds\V14\Enums\DeviceEnum\Device;
-use Google\Ads\GoogleAds\V14\Enums\GenderTypeEnum\GenderType;
-use Google\Ads\GoogleAds\V14\Enums\ReachPlanAgeRangeEnum\ReachPlanAgeRange;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Services\CampaignDuration;
-use Google\Ads\GoogleAds\V14\Services\PlannableLocation;
-use Google\Ads\GoogleAds\V14\Services\PlannedProduct;
-use Google\Ads\GoogleAds\V14\Services\PlannedProductReachForecast;
-use Google\Ads\GoogleAds\V14\Services\ProductMetadata;
-use Google\Ads\GoogleAds\V14\Services\ReachForecast;
-use Google\Ads\GoogleAds\V14\Services\Targeting;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\V17\Common\DeviceInfo;
+use Google\Ads\GoogleAds\V17\Common\GenderInfo;
+use Google\Ads\GoogleAds\V17\Enums\DeviceEnum\Device;
+use Google\Ads\GoogleAds\V17\Enums\GenderTypeEnum\GenderType;
+use Google\Ads\GoogleAds\V17\Enums\ReachPlanAgeRangeEnum\ReachPlanAgeRange;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Services\CampaignDuration;
+use Google\Ads\GoogleAds\V17\Services\GenerateReachForecastRequest;
+use Google\Ads\GoogleAds\V17\Services\ListPlannableLocationsRequest;
+use Google\Ads\GoogleAds\V17\Services\ListPlannableProductsRequest;
+use Google\Ads\GoogleAds\V17\Services\PlannableLocation;
+use Google\Ads\GoogleAds\V17\Services\PlannedProduct;
+use Google\Ads\GoogleAds\V17\Services\PlannedProductReachForecast;
+use Google\Ads\GoogleAds\V17\Services\ProductMetadata;
+use Google\Ads\GoogleAds\V17\Services\ReachForecast;
+use Google\Ads\GoogleAds\V17\Services\Targeting;
 use Google\ApiCore\ApiException;
 
 /**
@@ -72,6 +75,12 @@ class ForecastReach
         $googleAdsClient = (new GoogleAdsClientBuilder())
             ->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -126,7 +135,9 @@ class ForecastReach
      */
     private static function showPlannableLocations(GoogleAdsClient $googleAdsClient)
     {
-        $response = $googleAdsClient->getReachPlanServiceClient()->listPlannableLocations();
+        $response = $googleAdsClient->getReachPlanServiceClient()->listPlannableLocations(
+            new ListPlannableLocationsRequest()
+        );
 
         printf("Plannable Locations:%sName, Id, ParentCountryId%s", PHP_EOL, PHP_EOL);
         foreach ($response->getPlannableLocations() as $location) {
@@ -150,7 +161,7 @@ class ForecastReach
     private static function showPlannableProducts(GoogleAdsClient $googleAdsClient)
     {
         $response = $googleAdsClient->getReachPlanServiceClient()->listPlannableProducts(
-            self::LOCATION_ID
+            ListPlannableProductsRequest::build(self::LOCATION_ID)
         );
 
         print 'Plannable Products for Location ID ' . self::LOCATION_ID . ':' . PHP_EOL;
@@ -214,10 +225,9 @@ class ForecastReach
         // See the docs for defaults and valid ranges:
         // https://developers.google.com/google-ads/api/reference/rpc/latest/GenerateReachForecastRequest
         $response = $googleAdsClient->getReachPlanServiceClient()->generateReachForecast(
-            $customerId,
-            $duration,
-            $productMix,
-            ['currencyCode' => $currencyCode, 'targeting' => $targeting]
+            GenerateReachForecastRequest::build($customerId, $duration, $productMix)
+                ->setCurrencyCode($currencyCode)
+                ->setTargeting($targeting)
         );
 
         printf(

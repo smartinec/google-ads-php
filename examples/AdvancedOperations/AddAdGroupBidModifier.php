@@ -23,16 +23,17 @@ require __DIR__ . '/../../vendor/autoload.php';
 use GetOpt\GetOpt;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\DeviceInfo;
-use Google\Ads\GoogleAds\V14\Enums\DeviceEnum\Device;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\AdGroupBidModifier;
-use Google\Ads\GoogleAds\V14\Services\AdGroupBidModifierOperation;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\DeviceInfo;
+use Google\Ads\GoogleAds\V17\Enums\DeviceEnum\Device;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\AdGroupBidModifier;
+use Google\Ads\GoogleAds\V17\Services\AdGroupBidModifierOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateAdGroupBidModifiersRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -63,6 +64,12 @@ class AddAdGroupBidModifier
         // OAuth2 credentials above.
         $googleAdsClient = (new GoogleAdsClientBuilder())->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -129,8 +136,7 @@ class AddAdGroupBidModifier
         // Issues a mutate request to add the ad group bid modifier.
         $adGroupBidModifierServiceClient = $googleAdsClient->getAdGroupBidModifierServiceClient();
         $response = $adGroupBidModifierServiceClient->mutateAdGroupBidModifiers(
-            $customerId,
-            [$adGroupBidModifierOperation]
+            MutateAdGroupBidModifiersRequest::build($customerId, [$adGroupBidModifierOperation])
         );
 
         printf("Added %d ad group bid modifier:%s", $response->getResults()->count(), PHP_EOL);

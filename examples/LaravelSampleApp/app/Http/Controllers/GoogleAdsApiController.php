@@ -18,20 +18,20 @@
 
 namespace App\Http\Controllers;
 
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Enums\CampaignStatusEnum\CampaignStatus;
-use Google\Ads\GoogleAds\V14\Resources\Campaign;
-use Google\Ads\GoogleAds\V14\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Enums\CampaignStatusEnum\CampaignStatus;
+use Google\Ads\GoogleAds\V17\Resources\Campaign;
+use Google\Ads\GoogleAds\V17\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V17\Services\GoogleAdsRow;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 class GoogleAdsApiController extends Controller
 {
-    private static $REPORT_TYPE_TO_DEFAULT_SELECTED_FIELDS = [
+    private const REPORT_TYPE_TO_DEFAULT_SELECTED_FIELDS = [
         'campaign' => ['campaign.id', 'campaign.name', 'campaign.status'],
         'customer' => ['customer.id']
     ];
@@ -71,7 +71,7 @@ class GoogleAdsApiController extends Controller
 
             // Merges the list of metric fields to the resource ones that are selected by default.
             $selectedFields = array_merge(
-                self::$REPORT_TYPE_TO_DEFAULT_SELECTED_FIELDS[$reportType],
+                self::REPORT_TYPE_TO_DEFAULT_SELECTED_FIELDS[$reportType],
                 $selectedFields
             );
 

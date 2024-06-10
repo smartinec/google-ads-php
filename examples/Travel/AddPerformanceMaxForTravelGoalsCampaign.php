@@ -25,43 +25,46 @@ use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\CallToActionAsset;
-use Google\Ads\GoogleAds\V14\Common\HotelPropertyAsset;
-use Google\Ads\GoogleAds\V14\Common\ImageAsset;
-use Google\Ads\GoogleAds\V14\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V14\Common\TextAsset;
-use Google\Ads\GoogleAds\V14\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V14\Enums\AssetFieldTypeEnum\AssetFieldType;
-use Google\Ads\GoogleAds\V14\Enums\AssetGroupStatusEnum\AssetGroupStatus;
-use Google\Ads\GoogleAds\V14\Enums\AssetSetTypeEnum\AssetSetType;
-use Google\Ads\GoogleAds\V14\Enums\BudgetDeliveryMethodEnum\BudgetDeliveryMethod;
-use Google\Ads\GoogleAds\V14\Enums\CampaignStatusEnum\CampaignStatus;
-use Google\Ads\GoogleAds\V14\Enums\HotelAssetSuggestionStatusEnum\HotelAssetSuggestionStatus;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\Asset;
-use Google\Ads\GoogleAds\V14\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V14\Resources\AssetGroupAsset;
-use Google\Ads\GoogleAds\V14\Resources\AssetSet;
-use Google\Ads\GoogleAds\V14\Resources\AssetSetAsset;
-use Google\Ads\GoogleAds\V14\Resources\Campaign;
-use Google\Ads\GoogleAds\V14\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V14\Services\AssetGroupAssetOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetGroupOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetSetAssetOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetSetOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignBudgetOperation;
-use Google\Ads\GoogleAds\V14\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V14\Services\HotelAssetSuggestion;
-use Google\Ads\GoogleAds\V14\Services\HotelImageAsset;
-use Google\Ads\GoogleAds\V14\Services\HotelTextAsset;
-use Google\Ads\GoogleAds\V14\Services\MutateGoogleAdsResponse;
-use Google\Ads\GoogleAds\V14\Services\MutateOperation;
-use Google\Ads\GoogleAds\V14\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\CallToActionAsset;
+use Google\Ads\GoogleAds\V17\Common\HotelPropertyAsset;
+use Google\Ads\GoogleAds\V17\Common\ImageAsset;
+use Google\Ads\GoogleAds\V17\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V17\Common\TextAsset;
+use Google\Ads\GoogleAds\V17\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V17\Enums\AssetFieldTypeEnum\AssetFieldType;
+use Google\Ads\GoogleAds\V17\Enums\AssetGroupStatusEnum\AssetGroupStatus;
+use Google\Ads\GoogleAds\V17\Enums\AssetSetTypeEnum\AssetSetType;
+use Google\Ads\GoogleAds\V17\Enums\BudgetDeliveryMethodEnum\BudgetDeliveryMethod;
+use Google\Ads\GoogleAds\V17\Enums\CampaignStatusEnum\CampaignStatus;
+use Google\Ads\GoogleAds\V17\Enums\HotelAssetSuggestionStatusEnum\HotelAssetSuggestionStatus;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\Asset;
+use Google\Ads\GoogleAds\V17\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V17\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V17\Resources\AssetSet;
+use Google\Ads\GoogleAds\V17\Resources\AssetSetAsset;
+use Google\Ads\GoogleAds\V17\Resources\Campaign;
+use Google\Ads\GoogleAds\V17\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V17\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\V17\Services\AssetGroupOperation;
+use Google\Ads\GoogleAds\V17\Services\AssetOperation;
+use Google\Ads\GoogleAds\V17\Services\AssetSetAssetOperation;
+use Google\Ads\GoogleAds\V17\Services\AssetSetOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\V17\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V17\Services\HotelAssetSuggestion;
+use Google\Ads\GoogleAds\V17\Services\HotelImageAsset;
+use Google\Ads\GoogleAds\V17\Services\HotelTextAsset;
+use Google\Ads\GoogleAds\V17\Services\MutateAssetSetsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V17\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V17\Services\MutateOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\V17\Services\SuggestTravelAssetsRequest;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Serializer;
 
@@ -157,6 +160,12 @@ class AddPerformanceMaxForTravelGoalsCampaign
         $googleAdsClient = (new GoogleAdsClientBuilder())
             ->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -270,8 +279,7 @@ class AddPerformanceMaxForTravelGoalsCampaign
         // Issues a mutate request to create everything and prints the results.
         $googleAdsServiceClient = $googleAdsClient->getGoogleAdsServiceClient();
         $response = $googleAdsServiceClient->mutate(
-            $customerId,
-            $operations
+            MutateGoogleAdsRequest::build($customerId, $operations)
         );
         print "Created the following entities for a campaign budget, a campaign, and an asset group"
             . " for Performance Max for travel goals:" . PHP_EOL;
@@ -297,13 +305,11 @@ class AddPerformanceMaxForTravelGoalsCampaign
         // for travel goals campaign.
         $travelAssetSuggestionServiceClient =
             $googleAdsClient->getTravelAssetSuggestionServiceClient();
-        $response = $travelAssetSuggestionServiceClient->suggestTravelAssets(
-            $customerId,
-            // Uses 'en-US' as an example. It can be any language specifications in BCP 47 format.
-            'en-US',
-            // The service accepts several place IDs. We use only one here for demonstration.
-            ['placeId' => [$placeId]]
-        );
+        // Uses 'en-US' as an example. It can be any language specifications in BCP 47 format.
+        $request = SuggestTravelAssetsRequest::build($customerId, 'en-US');
+        // The service accepts several place IDs. We use only one here for demonstration.
+        $request->setPlaceIds([$placeId]);
+        $response = $travelAssetSuggestionServiceClient->suggestTravelAssets($request);
         printf("Fetched a hotel asset suggestion for the place ID '%s'.%s", $placeId, PHP_EOL);
         return $response->getHotelAssetSuggestions()[0];
     }
@@ -371,7 +377,8 @@ class AddPerformanceMaxForTravelGoalsCampaign
         // Issues a mutate request to add all assets.
         $googleAdsService = $googleAdsClient->getGoogleAdsServiceClient();
         /** @var MutateGoogleAdsResponse $mutateGoogleAdsResponse */
-        $mutateGoogleAdsResponse = $googleAdsService->mutate($customerId, $operations);
+        $mutateGoogleAdsResponse =
+            $googleAdsService->mutate(MutateGoogleAdsRequest::build($customerId, $operations));
 
         $assetResourceNames = [];
         foreach ($mutateGoogleAdsResponse->getMutateOperationResponses() as $response) {
@@ -411,7 +418,9 @@ class AddPerformanceMaxForTravelGoalsCampaign
 
         // Issues a mutate request to add a hotel asset set and prints its information.
         $assetSetServiceClient = $googleAdsClient->getAssetSetServiceClient();
-        $response = $assetSetServiceClient->mutateAssetSets($customerId, [$assetSetOperation]);
+        $response = $assetSetServiceClient->mutateAssetSets(
+            MutateAssetSetsRequest::build($customerId, [$assetSetOperation])
+        );
         $assetSetResourceName = $response->getResults()[0]->getResourceName();
         printf("Created an asset set with resource name: '%s'.%s", $assetSetResourceName, PHP_EOL);
         return $assetSetResourceName;
@@ -449,7 +458,7 @@ class AddPerformanceMaxForTravelGoalsCampaign
                 'create' => new Asset([
                     'resource_name' => $assetResourceName,
                     // Creates a hotel property asset for the place ID.
-                    'hotel_property_asset' => new HotelPropertyAsset(['place_ids' => $placeId]),
+                    'hotel_property_asset' => new HotelPropertyAsset(['place_id' => $placeId]),
                 ])
             ])
         ]);
@@ -467,7 +476,8 @@ class AddPerformanceMaxForTravelGoalsCampaign
         // Issues a mutate request to create all entities.
         $googleAdsService = $googleAdsClient->getGoogleAdsServiceClient();
         /** @var MutateGoogleAdsResponse $mutateGoogleAdsResponse */
-        $mutateGoogleAdsResponse = $googleAdsService->mutate($customerId, $operations);
+        $mutateGoogleAdsResponse =
+            $googleAdsService->mutate(MutateGoogleAdsRequest::build($customerId, $operations));
         print "Created the following entities for the hotel asset:" . PHP_EOL;
         self::printResponseDetails($mutateGoogleAdsResponse);
 

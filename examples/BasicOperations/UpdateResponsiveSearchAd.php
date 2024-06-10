@@ -25,17 +25,18 @@ use Google\Ads\GoogleAds\Examples\Utils\ArgumentNames;
 use Google\Ads\GoogleAds\Examples\Utils\ArgumentParser;
 use Google\Ads\GoogleAds\Examples\Utils\Helper;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsClientBuilder;
-use Google\Ads\GoogleAds\Lib\V14\GoogleAdsException;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsClientBuilder;
+use Google\Ads\GoogleAds\Lib\V17\GoogleAdsException;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\AdTextAsset;
-use Google\Ads\GoogleAds\V14\Common\ResponsiveSearchAdInfo;
-use Google\Ads\GoogleAds\V14\Enums\ServedAssetFieldTypeEnum\ServedAssetFieldType;
-use Google\Ads\GoogleAds\V14\Errors\GoogleAdsError;
-use Google\Ads\GoogleAds\V14\Resources\Ad;
-use Google\Ads\GoogleAds\V14\Services\AdOperation;
+use Google\Ads\GoogleAds\Util\V17\ResourceNames;
+use Google\Ads\GoogleAds\V17\Common\AdTextAsset;
+use Google\Ads\GoogleAds\V17\Common\ResponsiveSearchAdInfo;
+use Google\Ads\GoogleAds\V17\Enums\ServedAssetFieldTypeEnum\ServedAssetFieldType;
+use Google\Ads\GoogleAds\V17\Errors\GoogleAdsError;
+use Google\Ads\GoogleAds\V17\Resources\Ad;
+use Google\Ads\GoogleAds\V17\Services\AdOperation;
+use Google\Ads\GoogleAds\V17\Services\MutateAdsRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -63,6 +64,12 @@ class UpdateResponsiveSearchAd
         // OAuth2 credentials above.
         $googleAdsClient = (new GoogleAdsClientBuilder())->fromFile()
             ->withOAuth2Credential($oAuth2Credential)
+            // We set this value to true to show how to use GAPIC v2 source code. You can remove the
+            // below line if you wish to use the old-style source code. Note that in that case, you
+            // probably need to modify some parts of the code below to make it work.
+            // For more information, see
+            // https://developers.devsite.corp.google.com/google-ads/api/docs/client-libs/php/gapic.
+            ->usingGapicV2Source(true)
             ->build();
 
         try {
@@ -143,7 +150,8 @@ class UpdateResponsiveSearchAd
 
         // Issues a mutate request to update the ad.
         $adServiceClient = $googleAdsClient->getAdServiceClient();
-        $response = $adServiceClient->mutateAds($customerId, [$adOperation]);
+        $response =
+            $adServiceClient->mutateAds(MutateAdsRequest::build($customerId, [$adOperation]));
 
         // Prints the resource name of the updated ad.
         /** @var Ad $updatedAd */
